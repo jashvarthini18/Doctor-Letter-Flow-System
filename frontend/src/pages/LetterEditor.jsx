@@ -1,384 +1,782 @@
-// // import { useEffect, useState } from "react";
-// // import { useSearchParams } from "react-router-dom";
-// // import api from "../services/api";
-// // import RichTextEditor from "../components/RichTextEditor";
-
-// // function LetterEditor() {
-
-// //     const [searchParams] = useSearchParams();
-
-// //     const templateId = searchParams.get("templateId");
-
-// //     const [content, setContent] = useState("");
-// //     const [templateName, setTemplateName] = useState("");
-// //     const [loading, setLoading] = useState(true);
-
-// //     useEffect(() => {
-
-// //         const fetchTemplate = async () => {
-
-// //             try {
-
-// //                 const response =
-// //                     await api.get(`/templates/${templateId}`);
-
-// //                 const template = response.data.template;
-
-// //                 setTemplateName(template.name);
-
-// //                 setContent(template.content_html);
-
-// //             } catch (error) {
-
-// //                 console.error(error);
-
-// //             } finally {
-
-// //                 setLoading(false);
-
-// //             }
-// //         };
-
-// //         if (templateId) {
-// //             fetchTemplate();
-// //         }
-
-// //     }, [templateId]);
-
-// //     if (loading) {
-// //         return <h2>Loading editor...</h2>;
-// //     }
-
-// //     return (
-// //         <div>
-
-// //             <h1>{templateName}</h1>
-
-// //             <RichTextEditor
-// //                 content={content}
-// //                 onChange={setContent}
-// //             />
-
-// //         </div>
-// //     );
-// // }
-
-// // export default LetterEditor;
-// import { useEffect, useState } from "react";
-// import { useSearchParams } from "react-router-dom";
+// import { useEffect, useRef, useState } from "react";
+// import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 
 // import api from "../services/api";
 // import RichTextEditor from "../components/RichTextEditor";
+// import { getLoggedInDoctor } from "../utils/doctor";
 
 // function LetterEditor() {
-//     const doctorId = 1;
-//     const [searchParams] = useSearchParams();
+//   const [searchParams] = useSearchParams();
+//   const navigate = useNavigate();
+//   const location = useLocation();
 
-//     const templateId = searchParams.get("templateId");
+//   const patientDetails = location.state || {};
 
-//     const [content, setContent] = useState("");
-//     const [templateName, setTemplateName] = useState("");
+//   const templateId = searchParams.get("templateId");
+//   const letterId = searchParams.get("letterId");
 
-//     const [loading, setLoading] = useState(true);
-//     const [error, setError] = useState("");
-//     const [saveStatus, setSaveStatus] = useState("");
+//   const [content, setContent] = useState("");
+//   const [templateName, setTemplateName] = useState("");
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState("");
+//   const [saveStatus, setSaveStatus] = useState("");
 
-//     useEffect(() => {
+//   const [doctorProfile, setDoctorProfile] = useState(null);
+//   const [doctorProfileLoading, setDoctorProfileLoading] = useState(true);
+//   const [draftLoaded, setDraftLoaded] = useState(false);
 
-//         const fetchTemplate = async () => {
+//   const latestContent = useRef("");
 
-//             try {
+//   const doctor = getLoggedInDoctor();
 
-//                 const response =
-//                     await api.get(`/templates/${templateId}`);
 
-//                 const template = response.data.template;
+//   const replacePlaceholders = (html, details) => {
+//     return html
+//         .replace(
+//             /{{patient_name}}/g,
+//             details.patientName || ""
+//         )
 
-//                 setTemplateName(template.name);
+//         .replace(
+//             /{{consulting_doctor}}/g,
+//             details.consultingDoctor || ""
+//         )
 
-//                 setContent(template.content_html);
+//         .replace(
+//             /{{diagnosis}}/g,
+//             details.diagnosis || ""
+//         )
 
-//             } catch (error) {
+//         .replace(
+//             /{{duration}}/g,
+//             details.duration || ""
+//         )
 
-//                 console.error(error);
+//         .replace(
+//             /{{date}}/g,
+//             details.date || ""
+//         )
 
-//                 setError("Failed to load template");
+//         .replace(
+//             /{{doctor_name}}/g,
+//             doctorProfile?.name || doctor?.name || ""
+//         )
 
-//             } finally {
+//         .replace(
+//             /{{clinic_name}}/g,
+//             doctorProfile?.clinic_name ||
+//             doctor?.clinic_name ||
+//             ""
+//         )
 
-//                 setLoading(false);
+//         .replace(
+//             /{{logo_url}}/g,
+//             doctorProfile?.logo_url || doctor?.logo_url
+//                 ? `
+//                     <img
+//                         src="${doctorProfile?.logo_url || doctor?.logo_url}"
+//                         class="clinic-logo"
+//                         alt="Clinic Logo"
+//                     />
+//                 `
+//                 : ""
+//         )
 
-//             }
-//         };
+//         .replace(
+//             /{{signature_url}}/g,
+//             doctorProfile?.signature_url || doctor?.signature_url
+//                 ? `
+//                     <img
+//                         src="${doctorProfile?.signature_url || doctor?.signature_url}"
+//                         class="doctor-signature"
+//                         alt="Doctor Signature"
+//                     />
+//                 `
+//                 : ""
+//         );
+// };
+//   useEffect(() => {
+//     const loadEditorContent = async () => {
+//       // if (!doctor) {
+//       //   return;
+//       // }
+
+//       if (!doctor || doctorProfileLoading) {
+//         return;
+//       }
+
+//       try {
+//         setLoading(true);
+//         setError("");
+
+//         // =========================
+//         // REUSE EXISTING LETTER
+//         // =========================
+
+//         if (letterId) {
+//           const response = await api.get(`/letters/${letterId}`);
+
+//           const letter = response.data.letter;
+
+//           // Existing letter already contains
+//           // the final edited content
+//           setContent(letter.content_html);
+
+//           latestContent.current = letter.content_html;
+
+//           // Get template name
+//           if (letter.template_id) {
+//             const templateResponse = await api.get(
+//               `/templates/${letter.template_id}`,
+//             );
+
+//             setTemplateName(templateResponse.data.template.name);
+//           } else {
+//             setTemplateName(letter.letter_type || "Letter");
+//           }
+
+//           return;
+//         }
+
+//         // =========================
+//         // NEW LETTER FROM TEMPLATE
+//         // =========================
 
 //         if (templateId) {
+//           const response = await api.get(`/templates/${templateId}`);
 
-//             fetchTemplate();
+//           const template = response.data.template;
 
-//         } else {
+//           console.log("TEMPLATE FROM API:", template);
 
-//             setError("No template selected");
+//           setTemplateName(template.name);
 
-//             setLoading(false);
+//           const finalContent = replacePlaceholders(
+//             template.content_html,
+//             patientDetails,
+//           );
 
+//           console.log("FINAL CONTENT SENT TO EDITOR:", finalContent);
+
+//           setContent(finalContent);
+
+//           latestContent.current = finalContent;
+
+//           return;
 //         }
 
-//         if (!content || !templateId) {
+//         setError("No template or letter selected");
+//       } catch (error) {
+//         console.error("EDITOR LOAD ERROR:", error);
+
+//         setError("Failed to load letter");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     loadEditorContent();
+//   }, [
+//     templateId,
+//     letterId,
+//     doctorProfile,
+//     doctorProfileLoading,
+//     patientDetails,
+//   ]);
+
+//   useEffect(() => {
+//     const loadDoctorProfile = async () => {
+//       try {
+//         if (!doctor) {
+//           setDoctorProfileLoading(false);
+//           return;
+//         }
+
+//         const response = await api.get(`/doctors/${doctor.id}/profile`);
+
+//         setDoctorProfile(response.data.doctor);
+//       } catch (error) {
+//         console.error("DOCTOR PROFILE LOAD ERROR:", error);
+//       } finally {
+//         setDoctorProfileLoading(false);
+//       }
+//     };
+
+//     loadDoctorProfile();
+//   }, [doctor?.id]);
+
+//   useEffect(() => {
+//     if (!doctor || !templateId || letterId) {
+//       setDraftLoaded(true);
+//       return;
+//     }
+
+//     // For now, start with the fresh template.
+//     // Auto-save will still work.
+//     setDraftLoaded(true);
+//   }, [doctor?.id, templateId, letterId]);
+
+//   useEffect(() => {
+//     if (!doctor || !templateId || letterId) {
+//       return;
+//     }
+
+//     const saveDraft = async () => {
+//       if (!latestContent.current) {
 //         return;
+//       }
+
+//       try {
+//         setSaveStatus("Saving...");
+
+//         await api.post("/drafts", {
+//           doctor_id: doctor.id,
+//           template_id: Number(templateId),
+//           content_html: latestContent.current,
+//         });
+
+//         setSaveStatus("Saved");
+
+//         setTimeout(() => {
+//           setSaveStatus("");
+//         }, 2000);
+//       } catch (error) {
+//         console.error("DRAFT SAVE ERROR:", error);
+//         setSaveStatus("Save failed");
+//       }
+//     };
+
+//     const interval = setInterval(saveDraft, 5000);
+
+//     return () => clearInterval(interval);
+//   }, [doctor?.id, templateId, letterId]);
+
+//   // =========================
+//   // CONTENT CHANGE
+//   // =========================
+
+//   const handleContentChange = (newContent) => {
+//     latestContent.current = newContent;
+
+//     setContent(newContent);
+//   };
+
+//   // =========================
+//   // PREVIEW
+//   // =========================
+
+//   const handlePreview = () => {
+//     if (!doctor) {
+//       alert("Please login first");
+//       return;
 //     }
 
-//     // const timer = setTimeout(async () => {
+//     navigate("/preview", {
+//       state: {
+//         content: latestContent.current,
 
-//     //     try {
+//         templateId: templateId ? Number(templateId) : null,
 
-//     //         setSaveStatus("Saving...");
+//         letterId: letterId ? Number(letterId) : null,
 
-//     //         await api.post("/drafts", {
-//     //             doctor_id: 1,
-//     //             template_id: Number(templateId),
-//     //             content_html: content
-//     //         });
+//         templateName: templateName,
 
-//     //         setSaveStatus("✓ Saved");
+//         patientName: patientDetails.patientName || "",
 
-//     //     } catch (error) {
+//         consultingDoctor: patientDetails.consultingDoctor || "",
 
-//     //         console.error(error);
+//         diagnosis: patientDetails.diagnosis || "",
 
-//     //         setSaveStatus("Save failed");
+//         date: patientDetails.date || "",
 
-//     //     }
+//         duration: patientDetails.duration || "",
+//       },
+//     });
+//   };
 
-//     // }, 2000);
-// const timer = setTimeout(async () => {
+//   // =========================
+//   // LOGIN CHECK
+//   // =========================
 
-//         try {
-
-//             console.log("SENDING TO BACKEND:", content);
-
-//             setSaveStatus("Saving...");
-
-//             await api.post("/drafts", {
-//                 doctor_id: 1,
-//                 template_id: Number(templateId),
-//                 content_html: content
-//             });
-
-//             setSaveStatus("✓ Saved");
-
-//         } catch (error) {
-
-//             console.error(error);
-
-//             setSaveStatus("Save failed");
-
-//         }
-
-//     }, 2000);
-
-//     return () => clearTimeout(timer);
-
-//     }, [content, templateId]);
-
-//     if (loading) {
-
-//         return (
-//             <div>
-//                 Loading template...
-//             </div>
-//         );
-
-//     }
-
-//     if (error) {
-
-//         return (
-//             <div>
-//                 {error}
-//             </div>
-//         );
-
-//     }
-
+//   if (!doctor) {
 //     return (
+//       <div>
+//         <h2>Please login first</h2>
 
-//         <div>
-
-//             <h1>
-//                 {templateName}
-//             </h1>
-
-//             <div>
-//             {saveStatus}
-//         </div>
-
-//             <RichTextEditor
-//                 content={content}
-//                 onChange={setContent}
-//             />
-
-//         </div>
-
+//         <button onClick={() => navigate("/login")}>Go to Login</button>
+//       </div>
 //     );
+//   }
+
+//   if (loading || doctorProfileLoading || !draftLoaded) {
+//     return <div>Loading letter...</div>;
+//   }
+
+//   // =========================
+//   // ERROR
+//   // =========================
+
+//   if (error) {
+//     return <div>{error}</div>;
+//   }
+
+//   // =========================
+//   // UI
+//   // =========================
+
+//   return (
+//     <div>
+//       <h1>{templateName}</h1>
+
+//       {saveStatus && <div>{saveStatus}</div>}
+
+//       <RichTextEditor
+//         key={letterId || templateId}
+//         content={content}
+//         onChange={handleContentChange}
+//       />
+
+//       <div className="editor-actions">
+//         <button type="button" onClick={() => navigate(-1)}>
+//           Back
+//         </button>
+
+//         <button type="button" onClick={handlePreview}>
+//           Preview
+//         </button>
+//       </div>
+//     </div>
+//   );
 // }
 
 // export default LetterEditor;
 
 import { useEffect, useRef, useState } from "react";
-// import { useSearchParams } from "react-router-dom";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 
 import api from "../services/api";
 import RichTextEditor from "../components/RichTextEditor";
+import { getLoggedInDoctor } from "../utils/doctor";
 
 function LetterEditor() {
-    
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    const navigate = useNavigate();
+  const patientDetails = location.state || {};
+
   const templateId = searchParams.get("templateId");
+  const letterId = searchParams.get("letterId");
 
   const [content, setContent] = useState("");
   const [templateName, setTemplateName] = useState("");
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saveStatus, setSaveStatus] = useState("");
 
-  // Stores the latest editor content
+  const [doctorProfile, setDoctorProfile] = useState(null);
+  const [doctorProfileLoading, setDoctorProfileLoading] = useState(true);
+  const [draftLoaded, setDraftLoaded] = useState(false);
+
   const latestContent = useRef("");
 
-  // ========================================
-  // LOAD TEMPLATE
-  // ========================================
+  const doctor = getLoggedInDoctor();
+
+  const replacePlaceholders = (html, details) => {
+    return html
+      .replace(/{{patient_name}}/g, details.patientName || "")
+      .replace(/{{consulting_doctor}}/g, details.consultingDoctor || "")
+      .replace(/{{diagnosis}}/g, details.diagnosis || "")
+      .replace(/{{duration}}/g, details.duration || "")
+      .replace(/{{date}}/g, details.date || "")
+      .replace(
+        /{{doctor_name}}/g,
+        doctorProfile?.name || doctor?.name || ""
+      )
+      .replace(
+        /{{clinic_name}}/g,
+        doctorProfile?.clinic_name || doctor?.clinic_name || ""
+      )
+      .replace(
+        /{{logo_url}}/g,
+        doctorProfile?.logo_url || doctor?.logo_url
+          ? `<img src="${
+              doctorProfile?.logo_url || doctor?.logo_url
+            }" class="clinic-logo" alt="Clinic Logo" />`
+          : ""
+      )
+      .replace(
+        /{{signature_url}}/g,
+        doctorProfile?.signature_url || doctor?.signature_url
+          ? `<img src="${
+              doctorProfile?.signature_url || doctor?.signature_url
+            }" class="doctor-signature" alt="Doctor Signature" />`
+          : ""
+      );
+  };
 
   useEffect(() => {
-    const fetchTemplate = async () => {
+    const loadEditorContent = async () => {
+      if (!doctor || doctorProfileLoading) return;
+
       try {
-        const response = await api.get(`/templates/${templateId}`);
+        setLoading(true);
+        setError("");
 
-        const template = response.data.template;
+        if (letterId) {
+          const response = await api.get(`/letters/${letterId}`);
+          const letter = response.data.letter;
 
-        setTemplateName(template.name);
+          setContent(letter.content_html);
+          latestContent.current = letter.content_html;
 
-        setContent(template.content_html);
+          if (letter.template_id) {
+            const templateResponse = await api.get(
+              `/templates/${letter.template_id}`
+            );
 
-        // Also store initial content in ref
-        latestContent.current = template.content_html;
+            setTemplateName(
+              templateResponse.data.template.name
+            );
+          } else {
+            setTemplateName(letter.letter_type || "Letter");
+          }
+
+          return;
+        }
+
+        if (templateId) {
+          const response = await api.get(
+            `/templates/${templateId}`
+          );
+
+          const template = response.data.template;
+
+          console.log("TEMPLATE FROM API:", template);
+
+          setTemplateName(template.name);
+
+          const finalContent = replacePlaceholders(
+            template.content_html,
+            patientDetails
+          );
+
+          console.log(
+            "FINAL CONTENT SENT TO EDITOR:",
+            finalContent
+          );
+
+          setContent(finalContent);
+          latestContent.current = finalContent;
+
+          return;
+        }
+
+        setError("No template or letter selected");
       } catch (error) {
-        console.error(error);
-
-        setError("Failed to load template");
+        console.error("EDITOR LOAD ERROR:", error);
+        setError("Failed to load letter");
       } finally {
         setLoading(false);
       }
     };
 
-    if (templateId) {
-      fetchTemplate();
-    } else {
-      setError("No template selected");
-
-      setLoading(false);
-    }
-  }, [templateId]);
-
-  // ========================================
-  // AUTO SAVE
-  // ========================================
+    loadEditorContent();
+  }, [
+    templateId,
+    letterId,
+    doctorProfile,
+    doctorProfileLoading,
+    patientDetails,
+  ]);
 
   useEffect(() => {
-    if (!templateId) {
+    const loadDoctorProfile = async () => {
+      try {
+        if (!doctor) {
+          setDoctorProfileLoading(false);
+          return;
+        }
+
+        const response = await api.get(
+          `/doctors/${doctor.id}/profile`
+        );
+
+        setDoctorProfile(response.data.doctor);
+      } catch (error) {
+        console.error(
+          "DOCTOR PROFILE LOAD ERROR:",
+          error
+        );
+      } finally {
+        setDoctorProfileLoading(false);
+      }
+    };
+
+    loadDoctorProfile();
+  }, [doctor?.id]);
+
+  useEffect(() => {
+    if (!doctor || !templateId || letterId) {
+      setDraftLoaded(true);
       return;
     }
 
-    const timer = setTimeout(async () => {
-      const currentContent = latestContent.current;
+    // For now, start with the fresh template.
+    // Auto-save will still work.
+    setDraftLoaded(true);
+  }, [doctor?.id, templateId, letterId]);
 
-      if (!currentContent) {
-        return;
-      }
+  useEffect(() => {
+    if (!doctor || !templateId || letterId) return;
+
+    const saveDraft = async () => {
+      if (!latestContent.current) return;
 
       try {
-        console.log("SENDING TO BACKEND:", currentContent);
-
         setSaveStatus("Saving...");
 
-        const response = await api.post("/drafts", {
-          doctor_id: 1,
+        await api.post("/drafts", {
+          doctor_id: doctor.id,
           template_id: Number(templateId),
-          content_html: currentContent,
+          content_html: latestContent.current,
         });
 
-        console.log("SAVE RESPONSE:", response.data);
+        setSaveStatus("Saved");
 
-        setSaveStatus("✓ Saved");
+        setTimeout(() => setSaveStatus(""), 2000);
       } catch (error) {
-        console.error("SAVE ERROR:", error);
-
+        console.error("DRAFT SAVE ERROR:", error);
         setSaveStatus("Save failed");
       }
-    }, 2000);
-
-    return () => {
-      clearTimeout(timer);
     };
-  }, [content, templateId]);
 
-  // ========================================
-  // CONTENT CHANGE
-  // ========================================
+    const interval = setInterval(saveDraft, 5000);
+
+    return () => clearInterval(interval);
+  }, [doctor?.id, templateId, letterId]);
 
   const handleContentChange = (newContent) => {
-    // Update ref immediately
     latestContent.current = newContent;
-
-    // Update React state
     setContent(newContent);
   };
 
-  // ========================================
-  // LOADING
-  // ========================================
+  const handlePreview = () => {
+    if (!doctor) {
+      alert("Please login first");
+      return;
+    }
 
-  if (loading) {
-    return <div>Loading template...</div>;
+    navigate("/preview", {
+      state: {
+        content: latestContent.current,
+        templateId: templateId
+          ? Number(templateId)
+          : null,
+        letterId: letterId
+          ? Number(letterId)
+          : null,
+        templateName: templateName,
+        patientName:
+          patientDetails.patientName || "",
+        consultingDoctor:
+          patientDetails.consultingDoctor || "",
+        diagnosis:
+          patientDetails.diagnosis || "",
+        date:
+          patientDetails.date || "",
+        duration:
+          patientDetails.duration || "",
+      },
+    });
+  };
+
+  if (!doctor) {
+    return (
+      <div className="editor-message-page">
+        <div className="editor-message-card">
+          <div className="editor-message-icon">🔒</div>
+
+          <h2>Please login first</h2>
+
+          <p>
+            You need to login as a doctor before
+            creating a letter.
+          </p>
+
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => navigate("/login")}
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  // ========================================
-  // ERROR
-  // ========================================
+  if (
+    loading ||
+    doctorProfileLoading ||
+    !draftLoaded
+  ) {
+    return (
+      <div className="editor-message-page">
+        <div className="editor-message-card">
+          <div className="editor-loader"></div>
+
+          <h2>Loading letter...</h2>
+
+          <p>
+            Preparing your letter editor.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
-    return <div>{error}</div>;
+    return (
+      <div className="editor-message-page">
+        <div className="editor-message-card error-card">
+          <div className="editor-message-icon">⚠️</div>
+
+          <h2>Unable to load letter</h2>
+
+          <p>{error}</p>
+
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => navigate(-1)}
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  // ========================================
-  // PAGE
-  // ========================================
-
   return (
-    <div>
-      <h1>{templateName}</h1>
+    <div className="letter-editor-page">
 
-      <div>{saveStatus}</div>
+      {/* Header */}
+      <header className="editor-header">
 
-      <RichTextEditor content={content} onChange={handleContentChange} />
-      <div className="editor-actions">
+        <div className="editor-header-left">
+          <button
+            type="button"
+            className="editor-back-button"
+            onClick={() => navigate(-1)}
+          >
+            ←
+          </button>
 
-    <button
-        onClick={() => {
-            navigate("/preview", {
-                state: {
-                    content: latestContent.current
-                }
-            });
-        }}
-    >
-        Preview
-    </button>
+          <div>
+            <span className="editor-header-label">
+              Letter Editor
+            </span>
 
-</div>
+            <h1>{templateName}</h1>
+          </div>
+        </div>
+
+        <div className="editor-header-right">
+
+          {saveStatus && (
+            <div
+              className={`save-status ${
+                saveStatus === "Saved"
+                  ? "save-success"
+                  : saveStatus === "Save failed"
+                  ? "save-error"
+                  : "save-saving"
+              }`}
+            >
+              <span className="save-dot"></span>
+              {saveStatus}
+            </div>
+          )}
+
+          <span className="editor-mode">
+            Editing Mode
+          </span>
+
+        </div>
+
+      </header>
+
+      {/* Editor Content */}
+      <main className="editor-main">
+
+        <div className="editor-intro">
+          <div>
+            <h2>Edit your letter</h2>
+
+            <p>
+              Customize the letter content before
+              previewing and generating the PDF.
+            </p>
+          </div>
+
+          <div className="editor-tip">
+            <span>✦</span>
+            Changes are saved automatically
+          </div>
+        </div>
+
+        {/* Rich Text Editor */}
+        <section className="editor-card">
+
+          <div className="editor-card-header">
+            <div className="editor-card-title">
+              <span className="editor-document-icon">
+                📄
+              </span>
+
+              <div>
+                <strong>{templateName}</strong>
+                <span>
+                  Professional Letter
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="editor-content-area">
+            <RichTextEditor
+              key={letterId || templateId}
+              content={content}
+              onChange={handleContentChange}
+            />
+          </div>
+
+        </section>
+
+        {/* Actions */}
+        <div className="editor-actions">
+
+          <button
+            type="button"
+            className="secondary-editor-button"
+            onClick={() => navigate(-1)}
+          >
+            ← Back
+          </button>
+
+          <button
+            type="button"
+            className="preview-editor-button"
+            onClick={handlePreview}
+          >
+            Preview Letter
+            <span>→</span>
+          </button>
+
+        </div>
+
+      </main>
     </div>
   );
 }

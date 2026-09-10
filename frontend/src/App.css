@@ -1,4 +1,4 @@
-.counter {
+/* .counter {
   font-size: 16px;
   padding: 5px 10px;
   border-radius: 5px;
@@ -181,4 +181,379 @@
     right: 0;
     border-right-color: var(--border);
   }
+} */
+
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+}
+
+
+.editor-container {
+    width: 100%;
+    background: #e5e5e5;
+    padding: 20px;
+    box-sizing: border-box;
+}
+/* .toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+}
+
+.toolbar button {
+    padding: 8px 14px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+    border-radius: 4px;
+} */
+
+.toolbar {
+    width: 100%;
+    max-width: 210mm;
+    margin: 0 auto 10px auto;
+
+    padding: 8px;
+
+    background: white;
+    border: 1px solid #ddd;
+
+    display: flex;
+    gap: 6px;
+
+    box-sizing: border-box;
+}
+
+.toolbar button {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.toolbar button:hover {
+    background: #f0f0f0;
+}
+
+.editor-content {
+    margin-top: 10px;
+    background: white;
+    min-height: 700px;
+    padding: 50px;
+    border: 1px solid #ddd;
+}
+
+.ProseMirror {
+    min-height: 600px;
+    outline: none;
+}
+
+.ProseMirror p {
+    margin: 10px 0;
+}
+
+.ProseMirror h1 {
+    font-size: 28px;
+}
+
+.ProseMirror h2 {
+    font-size: 22px;
+}
+
+/* ========================================
+   A4 PREVIEW
+======================================== */
+
+.preview-wrapper {
+    min-height: 100vh;
+    background: #e5e5e5;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+}
+
+.a4-page {
+    width: 210mm;
+    min-height: 297mm;
+
+    background: white;
+
+    padding: 20mm;
+
+    box-sizing: border-box;
+
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+
+    font-family: Arial, sans-serif;
+
+    color: #000;
+}
+
+.a4-page h1 {
+    font-size: 28px;
+    margin-bottom: 25px;
+}
+
+.a4-page h2 {
+    font-size: 22px;
+}
+
+.a4-page p {
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 10px 0;
+}
+
+.editor-actions {
+    width: 90%;
+    max-width: 900px;
+    margin: 20px auto;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.editor-actions button,
+.preview-actions button {
+    padding: 12px 20px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.preview-actions {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.history-page {
+    width: 90%;
+    max-width: 1000px;
+    margin: 40px auto;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.history-header h1 {
+    margin: 0;
+}
+
+.history-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 15px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.history-info h3 {
+    margin-top: 0;
+}
+
+.history-info p {
+    margin: 6px 0;
+}
+
+.history-actions button {
+    padding: 10px 16px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* =========================
+   A4 Letter Preview
+   ========================= */
+
+.preview-wrapper {
+    min-height: 100vh;
+    background: #e5e5e5;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.a4-page {
+    width: 210mm;
+    min-height: 297mm;
+    background: white;
+    padding: 20mm;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+
+    font-family: Arial, sans-serif;
+    color: #000;
+
+    overflow-wrap: break-word;
+}
+
+/* Headings */
+.a4-page h1 {
+    font-size: 28px;
+    margin-bottom: 25px;
+}
+
+.a4-page h2 {
+    font-size: 22px;
+}
+
+/* Paragraphs */
+.a4-page p {
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 10px 0;
+}
+
+/* Important: prevent images from overflowing A4 */
+.a4-page img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Preview buttons */
+.preview-actions {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    gap: 10px;
+}
+
+.preview-actions button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+/* Images inside TipTap editor */
+.editor-content img {
+    height: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+/* Clinic logo */
+.editor-content img[alt="clinic-logo"] {
+    width: 150px;
+    max-width: 150px;
+    height: auto;
+    display: block;
+    margin: 0 auto 10px auto;
+}
+
+/* Doctor signature */
+.editor-content img[alt="doctor-signature"] {
+    width: 180px;
+    max-width: 180px;
+    height: auto;
+    display: block;
+    margin-top: 20px;
+}
+
+.editor-page {
+    width: 210mm;
+    min-height: 297mm;
+
+    margin: 0 auto;
+
+    background: white;
+
+    padding: 20mm;
+
+    box-sizing: border-box;
+
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+}
+
+/* TipTap editable area */
+.editor-page .ProseMirror {
+    min-height: calc(297mm - 40mm);
+
+    outline: none;
+
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+
+    color: #000;
+}
+
+/* Headings */
+.editor-page .ProseMirror h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.editor-page .ProseMirror h2 {
+    font-size: 22px;
+}
+
+.editor-page .ProseMirror p {
+    margin: 10px 0;
+}
+
+/* Prevent images from becoming huge */
+.editor-page .ProseMirror img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Clinic logo */
+.clinic-logo {
+    display: block;
+
+    width: 90px;
+    height: 90px;
+
+    object-fit: contain;
+
+    margin: 0 auto 15px auto;
+}
+
+/* Doctor signature */
+.doctor-signature {
+    display: block;
+
+    width: 130px;
+    height: 55px;
+
+    object-fit: contain;
+
+    margin-top: 10px;
+}
+
+.a4-page .clinic-logo {
+    display: block;
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    margin: 0 auto 15px auto;
+}
+
+.a4-page .doctor-signature {
+    display: block;
+    width: 130px;
+    height: 55px;
+    object-fit: contain;
+    margin-top: 10px;
 }
