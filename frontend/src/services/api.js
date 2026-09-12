@@ -1,13 +1,3 @@
-// import axios from "axios";
-
-// const api = axios.create({
-//     baseURL: "http://localhost:5000/api"
-// });
-
-// export default api;
-
-
-// frontend/src/services/api.js
 import axios from "axios";
 
 // This reads from .env (local) or .env.production (Netlify)

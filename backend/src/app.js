@@ -235,53 +235,6 @@ app.get("/api/drafts", async (req, res) => {
   }
 });
 
-// app.post("/api/letters/generate", async (req, res) => {
-
-//     try {
-
-//         const {
-//             doctor_id,
-//             template_id,
-//             patient_name,
-//             letter_type,
-//             content_html
-//         } = req.body;
-
-//         if (!doctor_id || !content_html) {
-
-//             return res.status(400).json({
-//                 message: "doctor_id and content_html are required"
-//             });
-
-//         }
-
-//         console.log("Generating PDF...");
-
-//         const pdfBuffer = await generatePDF(content_html);
-
-//         console.log("PDF generated successfully");
-
-//         res.set({
-//             "Content-Type": "application/pdf",
-//             "Content-Disposition": "attachment; filename=letter.pdf",
-//             "Content-Length": pdfBuffer.length
-//         });
-
-//         res.send(pdfBuffer);
-
-//     } catch (error) {
-
-//         console.error("PDF ERROR:", error);
-
-//         res.status(500).json({
-//             message: "Failed to generate PDF",
-//             error: error.message
-//         });
-
-//     }
-
-// });
-
 app.post("/api/letters/generate", async (req, res) => {
   try {
     const { doctor_id, template_id, patient_name, letter_type, content_html } =
@@ -540,44 +493,6 @@ app.get("/api/doctors/:id/profile", async (req, res) => {
   }
 });
 
-// app.delete("/api/letters/:id", async (req, res) => {
-//     try {
-//         const { id } = req.params;
-
-//         // Get the letter first
-//         const result = await pool.query(
-//             `SELECT * FROM letters WHERE id = $1`,
-//             [id]
-//         );
-
-//         if (result.rows.length === 0) {
-//             return res.status(404).json({
-//                 message: "Letter not found"
-//             });
-//         }
-
-//         const letter = result.rows[0];
-
-//         // Delete the database record
-//         await pool.query(
-//             `DELETE FROM letters WHERE id = $1`,
-//             [id]
-//         );
-
-//         res.json({
-//             message: "Letter deleted successfully",
-//             letter_id: id
-//         });
-
-//     } catch (error) {
-//         console.error("DELETE LETTER ERROR:", error);
-
-//         res.status(500).json({
-//             message: "Failed to delete letter",
-//             error: error.message
-//         });
-//     }
-// });
 app.delete("/api/letters/:id", async (req, res) => {
     try {
         const { id } = req.params;
