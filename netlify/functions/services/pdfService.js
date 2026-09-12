@@ -570,11 +570,14 @@
 // netlify/functions/services/pdfService.js
 
 // CHANGE 1: Use puppeteer-core and the serverless-compatible chromium
-const puppeteer = require("puppeteer-core");
+// const puppeteer = require("puppeteer-core");
 const chromium = require("@sparticuz/chromium");
 
 async function generatePDF(html) {
     // CHANGE 2: Launch using the serverless chromium executable and args
+    const puppeteerModule = await import("puppeteer-core");
+    const puppeteer = puppeteerModule.default || puppeteerModule;
+    
     const browser = await puppeteer.launch({
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
