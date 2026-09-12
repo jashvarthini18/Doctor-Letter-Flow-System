@@ -295,4 +295,6 @@ app.delete("/letters/:id", async (req, res) => {
 // --- REMOVED app.listen(5000) ---
 
 // --- EXPORT FOR NETLIFY ---
-module.exports.handler = serverless(app);
+module.exports.handler = serverless(app, {
+  basePath: "/.netlify/functions/api",
+});
