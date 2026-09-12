@@ -37,11 +37,45 @@ app.get("/test-db", async (req, res) => {
 });
 
 // Doctor access API
+// app.post("/doctors/access", async (req, res) => {
+//   try {
+//     const { mobile_number } = req.body;
+//     if (!mobile_number) {
+//       return res.status(400).json({ message: "Mobile number is required" });
+//     }
+
+//     const result = await pool.query(
+//       `SELECT * FROM doctors WHERE mobile_number = $1`,
+//       [mobile_number]
+//     );
+
+//     if (result.rows.length > 0) {
+//       return res.json({ message: "Doctor found", doctor: result.rows[0] });
+//     }
+
+//     return res.status(404).json({ message: "Doctor not found" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+// });
+
 app.post("/doctors/access", async (req, res) => {
   try {
+    console.log("DOCTOR ACCESS REQUEST BODY:", req.body);
+    console.log(
+      "MOBILE VALUE:",
+      req.body?.mobile_number,
+      "TYPE:",
+      typeof req.body?.mobile_number
+    );
+
     const { mobile_number } = req.body;
+
     if (!mobile_number) {
-      return res.status(400).json({ message: "Mobile number is required" });
+      return res.status(400).json({
+        message: "Mobile number is required",
+      });
     }
 
     const result = await pool.query(
@@ -49,14 +83,26 @@ app.post("/doctors/access", async (req, res) => {
       [mobile_number]
     );
 
+    console.log("DOCTOR QUERY RESULT:", result.rows);
+
     if (result.rows.length > 0) {
-      return res.json({ message: "Doctor found", doctor: result.rows[0] });
+      return res.json({
+        message: "Doctor found",
+        doctor: result.rows[0],
+      });
     }
 
-    return res.status(404).json({ message: "Doctor not found" });
+    return res.status(404).json({
+      message: "Doctor not found",
+    });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("DOCTOR ACCESS ERROR:", error);
+
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
   }
 });
 
