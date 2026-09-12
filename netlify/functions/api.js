@@ -20,7 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 // Test database connection
-app.get("/api/test-db", async (req, res) => {
+app.get("/test-db", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");
     res.json({
@@ -37,7 +37,7 @@ app.get("/api/test-db", async (req, res) => {
 });
 
 // Doctor access API
-app.post("/api/doctors/access", async (req, res) => {
+app.post("/doctors/access", async (req, res) => {
   try {
     const { mobile_number } = req.body;
     if (!mobile_number) {
@@ -60,7 +60,7 @@ app.post("/api/doctors/access", async (req, res) => {
   }
 });
 
-app.get("/api/templates", async (req, res) => {
+app.get("/templates", async (req, res) => {
   try {
     const result = await pool.query(`SELECT * FROM templates ORDER BY id`);
     res.json({ templates: result.rows });
@@ -70,7 +70,7 @@ app.get("/api/templates", async (req, res) => {
   }
 });
 
-app.get("/api/templates/:id", async (req, res) => {
+app.get("/templates/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(`SELECT * FROM templates WHERE id = $1`, [id]);
@@ -85,7 +85,7 @@ app.get("/api/templates/:id", async (req, res) => {
   }
 });
 
-app.post("/api/drafts", async (req, res) => {
+app.post("/drafts", async (req, res) => {
   try {
     const { doctor_id, template_id, content_html } = req.body;
     if (!doctor_id || !template_id || !content_html) {
@@ -117,7 +117,7 @@ app.post("/api/drafts", async (req, res) => {
   }
 });
 
-app.get("/api/drafts", async (req, res) => {
+app.get("/drafts", async (req, res) => {
   try {
     const { doctor_id, template_id } = req.query;
     if (!doctor_id || !template_id) {
@@ -139,7 +139,7 @@ app.get("/api/drafts", async (req, res) => {
   }
 });
 
-app.post("/api/letters/generate", async (req, res) => {
+app.post("/letters/generate", async (req, res) => {
   try {
     const { doctor_id, template_id, patient_name, letter_type, content_html } = req.body;
     console.log("BACKEND RECEIVED CONTENT:", content_html);
@@ -184,7 +184,7 @@ app.post("/api/letters/generate", async (req, res) => {
   }
 });
 
-app.get("/api/letters", async (req, res) => {
+app.get("/letters", async (req, res) => {
   try {
     const { doctor_id } = req.query;
     if (!doctor_id) {
@@ -203,7 +203,7 @@ app.get("/api/letters", async (req, res) => {
   }
 });
 
-app.get("/api/letters/:id/download", async (req, res) => {
+app.get("/letters/:id/download", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(`SELECT s3_key FROM letters WHERE id = $1`, [id]);
@@ -220,7 +220,7 @@ app.get("/api/letters/:id/download", async (req, res) => {
   }
 });
 
-app.get("/api/letters/:id", async (req, res) => {
+app.get("/letters/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
@@ -239,7 +239,7 @@ app.get("/api/letters/:id", async (req, res) => {
   }
 });
 
-app.get("/api/doctors/:id/profile", async (req, res) => {
+app.get("/doctors/:id/profile", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
@@ -268,7 +268,7 @@ app.get("/api/doctors/:id/profile", async (req, res) => {
   }
 });
 
-app.delete("/api/letters/:id", async (req, res) => {
+app.delete("/letters/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(`SELECT * FROM letters WHERE id = $1`, [id]);
