@@ -10,16 +10,16 @@ const {
 } = require("@aws-sdk/s3-request-presigner");
 
 const s3 = new S3Client({
-    region: process.env.AWS_REGION,
+    region: process.env.MY_AWS_REGION,
     credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+        accessKeyId: process.env.MY_AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.MY_AWS_SECRET_ACCESS_KEY
     }
 });
 
 async function uploadPDF(pdfBuffer, key) {
     const command = new PutObjectCommand({
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Bucket: process.env.MY_AWS_S3_BUCKET_NAME,
         Key: key,
         Body: pdfBuffer,
         ContentType: "application/pdf"
@@ -32,7 +32,7 @@ async function uploadPDF(pdfBuffer, key) {
 
 async function getPDFDownloadUrl(key) {
     const command = new GetObjectCommand({
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Bucket: process.env.MY_AWS_S3_BUCKET_NAME,
         Key: key
     });
 
@@ -44,7 +44,7 @@ async function getPDFDownloadUrl(key) {
 }
 async function getSignedFileUrl(key) {
     const command = new GetObjectCommand({
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Bucket: process.env.MY_AWS_S3_BUCKET_NAME,
         Key: key
     });
 
@@ -57,7 +57,7 @@ async function getSignedFileUrl(key) {
 
 async function deletePDF(key) {
     const command = new DeleteObjectCommand({
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Bucket: process.env.MY_AWS_S3_BUCKET_NAME,
         Key: key
     });
 
