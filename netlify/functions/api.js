@@ -60,17 +60,18 @@ app.get("/test-db", async (req, res) => {
 //   }
 // });
 
-app.post("/doctors/access", async (req, res) => {
+app.post(["/doctors/access", "/api/doctors/access"], async (req, res) => {
   try {
     console.log("DOCTOR ACCESS REQUEST BODY:", req.body);
-    console.log(
-      "MOBILE VALUE:",
-      req.body?.mobile_number,
-      "TYPE:",
-      typeof req.body?.mobile_number
-    );
 
     const { mobile_number } = req.body;
+
+    console.log(
+      "MOBILE VALUE:",
+      mobile_number,
+      "TYPE:",
+      typeof mobile_number
+    );
 
     if (!mobile_number) {
       return res.status(400).json({
@@ -99,7 +100,7 @@ app.post("/doctors/access", async (req, res) => {
   } catch (error) {
     console.error("DOCTOR ACCESS ERROR:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       message: "Server error",
       error: error.message,
     });
