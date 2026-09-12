@@ -3,7 +3,14 @@
   publish = "frontend/dist"
   functions = "netlify/functions"
 
+# API requests → Netlify Function
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
+  status = 200
+
+# React Router routes → React application
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200
