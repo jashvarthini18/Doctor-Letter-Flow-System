@@ -308,10 +308,12 @@ function Preview() {
         );
       }
 
-      window.open(
-        downloadUrl,
-        "_blank"
-      );
+      // window.open(
+      //   downloadUrl,
+      //   "_blank"
+      // );
+
+      window.location.href = downloadUrl;
 
     } catch (error) {
       console.error(

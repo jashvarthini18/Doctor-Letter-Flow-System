@@ -1068,7 +1068,8 @@ function History() {
         throw new Error("Download URL not returned");
       }
 
-      window.open(downloadUrl, "_blank");
+      // window.open(downloadUrl, "_blank");
+      window.location.href = downloadUrl;
     } catch (error) {
       console.error("DOWNLOAD ERROR:", error);
       alert("Failed to download letter");
