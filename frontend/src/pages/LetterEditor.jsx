@@ -29,7 +29,6 @@
 
 //   const doctor = getLoggedInDoctor();
 
-
 //   const replacePlaceholders = (html, details) => {
 //     return html
 //         .replace(
@@ -382,38 +381,56 @@ function LetterEditor() {
 
   const doctor = getLoggedInDoctor();
 
+  const formatLetterDate = (dateString) => {
+  if (!dateString) return "";
+
+  const date = new Date(`${dateString}T00:00:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
   const replacePlaceholders = (html, details) => {
-    return html
-      .replace(/{{patient_name}}/g, details.patientName || "")
-      .replace(/{{consulting_doctor}}/g, details.consultingDoctor || "")
-      .replace(/{{diagnosis}}/g, details.diagnosis || "")
-      .replace(/{{duration}}/g, details.duration || "")
-      .replace(/{{date}}/g, details.date || "")
-      .replace(
-        /{{doctor_name}}/g,
-        doctorProfile?.name || doctor?.name || ""
-      )
-      .replace(
-        /{{clinic_name}}/g,
-        doctorProfile?.clinic_name || doctor?.clinic_name || ""
-      )
-      .replace(
-        /{{logo_url}}/g,
-        doctorProfile?.logo_url || doctor?.logo_url
-          ? `<img src="${
-              doctorProfile?.logo_url || doctor?.logo_url
-            }" class="clinic-logo" alt="Clinic Logo" />`
-          : ""
-      )
-      .replace(
-        /{{signature_url}}/g,
-        doctorProfile?.signature_url || doctor?.signature_url
-          ? `<img src="${
-              doctorProfile?.signature_url || doctor?.signature_url
-            }" class="doctor-signature" alt="Doctor Signature" />`
-          : ""
-      );
+    return (
+      html
+        .replace(/{{patient_name}}/g, details.patientName || "")
+        .replace(/{{consulting_doctor}}/g, details.consultingDoctor || "")
+        .replace(/{{diagnosis}}/g, details.diagnosis || "")
+        .replace(/{{duration}}/g, details.duration || "")
+        // .replace(/{{date}}/g, details.date || "")
+        .replace(/{{date}}/g, formatLetterDate(details.date))
+        .replace(/{{doctor_name}}/g, doctorProfile?.name || doctor?.name || "")
+        .replace(
+          /{{clinic_name}}/g,
+          doctorProfile?.clinic_name || doctor?.clinic_name || "",
+        )
+        .replace(/{{clinic_address}}/g, doctorProfile?.clinic_address || "")
+        .replace(
+          /{{logo_url}}/g,
+          doctorProfile?.logo_url || doctor?.logo_url
+            ? `<img src="${
+                doctorProfile?.logo_url || doctor?.logo_url
+              }" class="clinic-logo" alt="Clinic Logo" />`
+            : "",
+        )
+        .replace(
+          /{{signature_url}}/g,
+          doctorProfile?.signature_url || doctor?.signature_url
+            ? `<img src="${
+                doctorProfile?.signature_url || doctor?.signature_url
+              }" class="doctor-signature" alt="Doctor Signature" />`
+            : "",
+        )
+    );
   };
+
 
   useEffect(() => {
     const loadEditorContent = async () => {
@@ -432,12 +449,10 @@ function LetterEditor() {
 
           if (letter.template_id) {
             const templateResponse = await api.get(
-              `/templates/${letter.template_id}`
+              `/templates/${letter.template_id}`,
             );
 
-            setTemplateName(
-              templateResponse.data.template.name
-            );
+            setTemplateName(templateResponse.data.template.name);
           } else {
             setTemplateName(letter.letter_type || "Letter");
           }
@@ -446,9 +461,7 @@ function LetterEditor() {
         }
 
         if (templateId) {
-          const response = await api.get(
-            `/templates/${templateId}`
-          );
+          const response = await api.get(`/templates/${templateId}`);
 
           const template = response.data.template;
 
@@ -458,13 +471,10 @@ function LetterEditor() {
 
           const finalContent = replacePlaceholders(
             template.content_html,
-            patientDetails
+            patientDetails,
           );
 
-          console.log(
-            "FINAL CONTENT SENT TO EDITOR:",
-            finalContent
-          );
+          console.log("FINAL CONTENT SENT TO EDITOR:", finalContent);
 
           setContent(finalContent);
           latestContent.current = finalContent;
@@ -498,16 +508,11 @@ function LetterEditor() {
           return;
         }
 
-        const response = await api.get(
-          `/doctors/${doctor.id}/profile`
-        );
+        const response = await api.get(`/doctors/${doctor.id}/profile`);
 
         setDoctorProfile(response.data.doctor);
       } catch (error) {
-        console.error(
-          "DOCTOR PROFILE LOAD ERROR:",
-          error
-        );
+        console.error("DOCTOR PROFILE LOAD ERROR:", error);
       } finally {
         setDoctorProfileLoading(false);
       }
@@ -570,23 +575,14 @@ function LetterEditor() {
     navigate("/preview", {
       state: {
         content: latestContent.current,
-        templateId: templateId
-          ? Number(templateId)
-          : null,
-        letterId: letterId
-          ? Number(letterId)
-          : null,
+        templateId: templateId ? Number(templateId) : null,
+        letterId: letterId ? Number(letterId) : null,
         templateName: templateName,
-        patientName:
-          patientDetails.patientName || "",
-        consultingDoctor:
-          patientDetails.consultingDoctor || "",
-        diagnosis:
-          patientDetails.diagnosis || "",
-        date:
-          patientDetails.date || "",
-        duration:
-          patientDetails.duration || "",
+        patientName: patientDetails.patientName || "",
+        consultingDoctor: patientDetails.consultingDoctor || "",
+        diagnosis: patientDetails.diagnosis || "",
+        date: patientDetails.date || "",
+        duration: patientDetails.duration || "",
       },
     });
   };
@@ -599,10 +595,7 @@ function LetterEditor() {
 
           <h2>Please login first</h2>
 
-          <p>
-            You need to login as a doctor before
-            creating a letter.
-          </p>
+          <p>You need to login as a doctor before creating a letter.</p>
 
           <button
             type="button"
@@ -616,11 +609,7 @@ function LetterEditor() {
     );
   }
 
-  if (
-    loading ||
-    doctorProfileLoading ||
-    !draftLoaded
-  ) {
+  if (loading || doctorProfileLoading || !draftLoaded) {
     return (
       <div className="editor-message-page">
         <div className="editor-message-card">
@@ -628,9 +617,7 @@ function LetterEditor() {
 
           <h2>Loading letter...</h2>
 
-          <p>
-            Preparing your letter editor.
-          </p>
+          <p>Preparing your letter editor.</p>
         </div>
       </div>
     );
@@ -660,10 +647,8 @@ function LetterEditor() {
 
   return (
     <div className="letter-editor-page">
-
       {/* Header */}
       <header className="editor-header">
-
         <div className="editor-header-left">
           <button
             type="button"
@@ -674,24 +659,21 @@ function LetterEditor() {
           </button>
 
           <div>
-            <span className="editor-header-label">
-              Letter Editor
-            </span>
+            <span className="editor-header-label">Letter Editor</span>
 
             <h1>{templateName}</h1>
           </div>
         </div>
 
         <div className="editor-header-right">
-
           {saveStatus && (
             <div
               className={`save-status ${
                 saveStatus === "Saved"
                   ? "save-success"
                   : saveStatus === "Save failed"
-                  ? "save-error"
-                  : "save-saving"
+                    ? "save-error"
+                    : "save-saving"
               }`}
             >
               <span className="save-dot"></span>
@@ -699,24 +681,19 @@ function LetterEditor() {
             </div>
           )}
 
-          <span className="editor-mode">
-            Editing Mode
-          </span>
-
+          <span className="editor-mode">Editing Mode</span>
         </div>
-
       </header>
 
       {/* Editor Content */}
       <main className="editor-main">
-
         <div className="editor-intro">
           <div>
             <h2>Edit your letter</h2>
 
             <p>
-              Customize the letter content before
-              previewing and generating the PDF.
+              Customize the letter content before previewing and generating the
+              PDF.
             </p>
           </div>
 
@@ -728,18 +705,13 @@ function LetterEditor() {
 
         {/* Rich Text Editor */}
         <section className="editor-card">
-
           <div className="editor-card-header">
             <div className="editor-card-title">
-              <span className="editor-document-icon">
-                📄
-              </span>
+              <span className="editor-document-icon">📄</span>
 
               <div>
                 <strong>{templateName}</strong>
-                <span>
-                  Professional Letter
-                </span>
+                <span>Professional Letter</span>
               </div>
             </div>
           </div>
@@ -751,12 +723,10 @@ function LetterEditor() {
               onChange={handleContentChange}
             />
           </div>
-
         </section>
 
         {/* Actions */}
         <div className="editor-actions">
-
           <button
             type="button"
             className="secondary-editor-button"
@@ -773,9 +743,7 @@ function LetterEditor() {
             Preview Letter
             <span>→</span>
           </button>
-
         </div>
-
       </main>
     </div>
   );

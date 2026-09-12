@@ -2,16 +2,16 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const pool = require("./config/database");
+const pool = require("../../netlify/functions/config/database");
 
-const { generatePDF } = require("./services/pdfService");
+const { generatePDF } = require("../../netlify/functions/services/pdfService");
 // const { uploadPDF, getPDFDownloadUrl } = require("./services/s3Service");
 const {
   uploadPDF,
   getPDFDownloadUrl,
   getSignedFileUrl,
   deletePDF
-} = require("./services/s3Service");
+} = require("../../netlify/functions/services/s3Service");
 
 const app = express();
 
@@ -496,6 +496,7 @@ app.get("/api/doctors/:id/profile", async (req, res) => {
                 mobile_number,
                 name,
                 clinic_name,
+                clinic_address,
                 logo_url,
                 signature_url
              FROM doctors

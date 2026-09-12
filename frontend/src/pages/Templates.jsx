@@ -197,7 +197,7 @@ function Templates() {
             <span>Welcome</span>
 
             <strong>
-              Dr. {doctor.name || "Doctor"}
+              {doctor.name || "Doctor"}
             </strong>
           </div>
 
