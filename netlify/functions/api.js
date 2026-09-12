@@ -107,28 +107,51 @@ app.post(["/doctors/access", "/api/doctors/access"], async (req, res) => {
   }
 });
 
-app.get("/templates", async (req, res) => {
+app.get(["/templates", "/api/templates"], async (req, res) => {
   try {
-    const result = await pool.query(`SELECT * FROM templates ORDER BY id`);
-    res.json({ templates: result.rows });
+    const result = await pool.query(
+      `SELECT * FROM templates ORDER BY id`
+    );
+
+    res.json({
+      templates: result.rows,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to fetch templates", error: error.message });
+    console.error("TEMPLATES ERROR:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch templates",
+      error: error.message,
+    });
   }
 });
 
-app.get("/templates/:id", async (req, res) => {
+
+app.get(["/templates/:id", "/api/templates/:id"], async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query(`SELECT * FROM templates WHERE id = $1`, [id]);
+
+    const result = await pool.query(
+      `SELECT * FROM templates WHERE id = $1`,
+      [id]
+    );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Template not found" });
+      return res.status(404).json({
+        message: "Template not found",
+      });
     }
-    res.json({ template: result.rows[0] });
+
+    res.json({
+      template: result.rows[0],
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to fetch template", error: error.message });
+    console.error("TEMPLATE ERROR:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch template",
+      error: error.message,
+    });
   }
 });
 
