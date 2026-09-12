@@ -155,7 +155,7 @@ app.get(["/templates/:id", "/api/templates/:id"], async (req, res) => {
   }
 });
 
-app.post("/drafts", async (req, res) => {
+app.post(["/drafts", "/api/drafts"], async (req, res) => {
   try {
     const { doctor_id, template_id, content_html } = req.body;
     if (!doctor_id || !template_id || !content_html) {
@@ -187,7 +187,7 @@ app.post("/drafts", async (req, res) => {
   }
 });
 
-app.get("/drafts", async (req, res) => {
+app.get(["/drafts", "/api/drafts"], async (req, res) => {
   try {
     const { doctor_id, template_id } = req.query;
     if (!doctor_id || !template_id) {
@@ -209,7 +209,7 @@ app.get("/drafts", async (req, res) => {
   }
 });
 
-app.post("/letters/generate", async (req, res) => {
+app.post(["/letters/generate", "/api/letters/generate"], async (req, res) => {
   try {
     const { doctor_id, template_id, patient_name, letter_type, content_html } = req.body;
     console.log("BACKEND RECEIVED CONTENT:", content_html);
@@ -254,7 +254,7 @@ app.post("/letters/generate", async (req, res) => {
   }
 });
 
-app.get("/letters", async (req, res) => {
+app.get(["/letters", "/api/letters"], async (req, res) => {
   try {
     const { doctor_id } = req.query;
     if (!doctor_id) {
@@ -273,7 +273,7 @@ app.get("/letters", async (req, res) => {
   }
 });
 
-app.get("/letters/:id/download", async (req, res) => {
+app.get(["/letters/:id/download", "/api/letters/:id/download"], async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(`SELECT s3_key FROM letters WHERE id = $1`, [id]);
@@ -290,7 +290,7 @@ app.get("/letters/:id/download", async (req, res) => {
   }
 });
 
-app.get("/letters/:id", async (req, res) => {
+app.get(["/letters/:id", "/api/letters/:id"], async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
@@ -309,7 +309,7 @@ app.get("/letters/:id", async (req, res) => {
   }
 });
 
-app.get("/doctors/:id/profile", async (req, res) => {
+app.get(["/doctors/:id/profile", "/api/doctors/:id/profile"], async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
@@ -338,7 +338,7 @@ app.get("/doctors/:id/profile", async (req, res) => {
   }
 });
 
-app.delete("/letters/:id", async (req, res) => {
+app.delete(["/letters/:id", "/api/letters/:id"], async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(`SELECT * FROM letters WHERE id = $1`, [id]);
